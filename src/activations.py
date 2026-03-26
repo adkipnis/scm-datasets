@@ -1,6 +1,6 @@
-from metabeta.scm.basic import basic_activations
-from metabeta.scm.gp import GP
-from metabeta.scm.meta import RandomScaleFactory, RandomChoiceFactory
+from .basic import basic_activations
+from .gp import GP
+from .meta import RandomScaleFactory, RandomChoiceFactory
 
 def getActivations():
     activations = basic_activations.copy()
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     import torch
     from torch import nn
     import matplotlib.pyplot as plt
-    from metabeta.utils import setSeed
+    from .utils import setSeed
     setSeed(42)
     x = torch.arange(start=-10, end=10, step=20/256)
 

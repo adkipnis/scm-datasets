@@ -3,7 +3,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch import distributions as D
 import numpy as np
-from metabeta.scm.meta import Standardizer
+from .meta import Standardizer
 
 
 # --- deterministic post-hoc layers
@@ -150,7 +150,7 @@ def getPosthocLayers() -> list[nn.Module]:
 
 
 if __name__ == '__main__':
-    from metabeta.utils import setSeed
+    from .utils import setSeed
     import numpy as np
     from scipy.stats import spearmanr
 

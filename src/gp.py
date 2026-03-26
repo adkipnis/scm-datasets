@@ -2,7 +2,7 @@ import numpy as np
 import torch
 from torch import nn
 from torch import distributions as D
-from metabeta.utils import logUniform
+from .utils import logUniform
 from .meta import Standardizer
 
 

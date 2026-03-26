@@ -3,8 +3,8 @@ from typing import Callable
 import numpy as np
 import torch
 from torch import nn
-from metabeta.scm import CauseSampler, getPosthocLayers
-from metabeta.simulation.utils import standardize, checkConstant
+from .scm import CauseSampler, getPosthocLayers
+from .utils import standardize, checkConstant
 
 phl = getPosthocLayers()
 
@@ -198,9 +198,8 @@ class Posthoc(nn.Module):
 # -----------------------------------------------
 if __name__ == '__main__':
     from tqdm import tqdm
-    from metabeta.scm import getActivations
-    from metabeta.utils import logUniform, setSeed
-    from metabeta.plot import plot
+    from .scm import getActivations
+    from .utils import logUniform, setSeed
     setSeed(0)
     batches = 32
 
@@ -225,5 +224,3 @@ if __name__ == '__main__':
         x = scm.sample()
         x = ph(x)
 
-        # plot.correlation(x)
-        plot.dataset(x, kde=False)
