@@ -46,8 +46,8 @@ class MultiThreshold(Base):
         self, n_in: int, n_out: int, standardize: bool = False, levels: int = 3
     ):
         super().__init__(n_in, n_out, standardize)
-        self.levels = levels # number of thresholds
-        self.tau = np.sort(np.random.normal(size=levels-1))
+        self.levels = levels  # number of thresholds
+        self.tau = np.sort(getRng().normal(size=levels - 1))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.preprocess(x)[..., 0]
