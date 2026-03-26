@@ -206,34 +206,3 @@ class Posthoc(nn.Module):
         if self.standardize:
             x = standardize(x, axis=0)
         return x
-
-
-# -----------------------------------------------
-if __name__ == '__main__':
-    from tqdm import tqdm
-    from .activations import getActivations
-    from .utils import logUniform, setSeed, getRng
-
-    setSeed(0)
-    batches = 32
-
-    # activation = RandomScaleFactory(GP)
-    # activation = RandomChoiceFactory([GP] * 8)
-    activations = getActivations()
-    for _ in tqdm(range(batches)):
-        config = {
-            'n_samples': 512,
-            'n_features': 5,  # getRng().integers(3, 8),
-            'n_causes': logUniform(getRng(), 2, 12, round=True),
-            'cause_dist': getRng().choice(['uniform', 'normal', 'mixed']),
-            'fixed': getRng().choice([True, False]),
-            'n_hidden': logUniform(getRng(), 5, 30, round=True, add=4),
-            'n_layers': getRng().integers(8, 32),
-            'activation': getRng().choice(activations),
-            'contiguous': getRng().choice([True, False]),
-            'blockwise': getRng().choice([True, False]),
-        }
-        scm = SCM(**config)
-        ph = Posthoc(**config)
-        x = scm.sample()
-        x = ph(x)
