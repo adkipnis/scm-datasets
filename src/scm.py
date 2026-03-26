@@ -162,7 +162,7 @@ class Posthoc(nn.Module):
         self,
         n_features: int,
         p_posthoc: float = 0.2,  # probability of posthoc transformation
-        standardize: bool = False,
+        standardize: bool = True,
         **kwargs,
     ):
         super().__init__()
