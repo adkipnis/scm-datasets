@@ -1,3 +1,5 @@
+"""Randomness and array utilities for dataset generation."""
+
 import random
 import numpy as np
 import torch
@@ -29,8 +31,8 @@ def logUniform(
     round: bool = False,
 ) -> np.ndarray | np.floating | np.integer:
     """sample from log uniform in [low, high) + {add} and optionally floor to integer"""
-    assert 0 < low, "lower bound must be positive"
-    assert low <= high, "lower bound smaller than upper bound"
+    assert 0 < low, 'lower bound must be positive'
+    assert low <= high, 'lower bound smaller than upper bound'
     log_low = np.log(low)
     log_high = np.log(high)
     out = rng.uniform(log_low, log_high, size)
@@ -46,7 +48,9 @@ def checkBinary(x: np.ndarray, axis: int = 0) -> np.ndarray:
     return np.all(binary, axis=axis)
 
 
-def checkContinuous(x: np.ndarray, axis: int = 0, tol: float = 1e-12) -> np.ndarray:
+def checkContinuous(
+    x: np.ndarray, axis: int = 0, tol: float = 1e-12
+) -> np.ndarray:
     diffs = np.abs(x - x.round())
     too_large = diffs > tol
     return np.all(too_large, axis=axis)
@@ -73,7 +77,10 @@ def moments(
 
 
 def standardize(
-    x: np.ndarray, axis: int = 0, exclude_binary: bool = True, eps: float = 1e-6
+    x: np.ndarray,
+    axis: int = 0,
+    exclude_binary: bool = True,
+    eps: float = 1e-6,
 ) -> np.ndarray:
     exclude = checkBinary(x, axis=axis) if exclude_binary else None
     mean, std = moments(x, axis, exclude=exclude)
