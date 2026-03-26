@@ -1,3 +1,5 @@
+"""Core structural causal model and post-hoc transformation pipeline."""
+
 from typing import Callable
 import numpy as np
 import torch
@@ -67,6 +69,7 @@ class SCM(nn.Module):
         self.p_dropout = p_dropout
         self.sigma_e = sigma_e
         self.vary_sigma_e = vary_sigma_e
+        self.max_retries = int(kwargs.get('max_retries', 64))
 
         # make sure to have enough hidden units
         self.n_hidden = max(self.n_hidden, 2 * self.n_features)
@@ -132,7 +135,7 @@ class SCM(nn.Module):
             nn.init.normal_(param[block_slice], std=sigma_w)
 
     def sample(self) -> torch.Tensor:
-        while True:
+        for _ in range(self.max_retries):
             causes = self.cs.sample()  # (seq_len, num_causes)
 
             # pass through each mlp layer
@@ -155,6 +158,9 @@ class SCM(nn.Module):
             x = outputs[:, indices]
             if sanityCheck(x):
                 return x
+        raise RuntimeError(
+            f'SCM.sample failed to produce a valid sample in {self.max_retries} attempts'
+        )
 
 
 class Posthoc(nn.Module):
