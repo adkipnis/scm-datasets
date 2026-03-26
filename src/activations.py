@@ -1,6 +1,9 @@
+"""Activation factory for composing basic, GP, and random-choice activations."""
+
 from .basic import basic_activations
 from .gp import GP
 from .meta import RandomScaleFactory, RandomChoiceFactory
+
 
 def getActivations() -> list:
     activations = basic_activations.copy()
