@@ -120,7 +120,7 @@ class SCM(nn.Module):
         # blockwise weight dropout for higher dependency between features
         nn.init.zeros_(param)
         max_blocks = np.ceil(np.sqrt(min(param.shape)))
-        n_blocks = np.random.randint(1, max_blocks)
+        n_blocks = getRng().integers(1, max_blocks)
         block_size = [dim // n_blocks for dim in param.shape]
         units_per_block = block_size[0] * block_size[1]
         keep_prob = (n_blocks * units_per_block) / param.numel()
@@ -168,7 +168,7 @@ class Posthoc(nn.Module):
 
         # posthoc transformations
         self.n_features = n_features
-        self.n_posthoc = np.random.binomial(n_features, p_posthoc)
+        self.n_posthoc = getRng().binomial(n_features, p_posthoc)
         layers = []
         for _ in range(self.n_posthoc):
             cfg = {
