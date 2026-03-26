@@ -24,7 +24,7 @@ def sanityCheck(x: torch.Tensor) -> bool:
     okay = not checkConstant(x.detach().numpy()).any()
     return okay
 
-@dataclass
+
 class SCM(nn.Module):
     ''' simplified version of the MLP-based structural causal model
     in https://github.com/soda-inria/tabicl'''
