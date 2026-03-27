@@ -38,7 +38,7 @@ class FractionalKernel:  # scale-free fractional kernel
         return 'Fractional'
 
     def __call__(self, k: int, ell: float = 0.0):
-        freqs = k * torch.rand(k)
+        freqs = (k * torch.rand(k)).clamp_min(1e-6)
         decay_exponent = -float(logUniform(getRng(), 0.7, 3.0))
         factor = freqs**decay_exponent
         factor = factor / (factor**2).sum().sqrt()
