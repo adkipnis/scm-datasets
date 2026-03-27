@@ -39,7 +39,7 @@ class SCM(nn.Module):
         # feature extraction
         contiguous: bool = False,  # sample adjacent features
         blockwise: bool = True,  # use blockwise dropout
-        p_dropout: float = 0.1,  # dropout probability for weights
+        p_dropout: float = 0.2,  # dropout probability for weights
         # Gaussian noise
         sigma_e: float = 0.01,  # for additive noise
         vary_sigma_e: bool = True,  # allow noise to vary per units
