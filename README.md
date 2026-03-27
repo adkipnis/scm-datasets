@@ -1,6 +1,6 @@
 # Structural CAusal Model Datsets (scamd)
 
-Generate realistic synthetic tabular datasets with a structural causal model (SCM).
+Generate realistic synthetic tabular datasets with using structural causal models.
 
 `scm-datasets` builds latent causes, transforms them through deep nonlinear mechanisms, and applies optional post-hoc feature transformations (categorical/count/rank/binning) to create mixed-type, high-dependency feature matrices.
 
