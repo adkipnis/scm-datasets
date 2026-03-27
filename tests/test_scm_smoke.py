@@ -101,13 +101,48 @@ class TestSCMSmoke(unittest.TestCase):
             n_samples=80,
             n_features=7,
             n_causes=10,
-            cause_dist='mixed',
             n_layers=5,
             n_hidden=24,
-            activation=nn.SiLU,
             blockwise=True,
+            cause_dist='mixed',
+            activation=nn.SiLU,
         )
         self.assertEqual(x.shape, (80, 7))
+        self.assertTrue(np.isfinite(x).all())
+
+    def test_generate_dataset_with_preset(self) -> None:
+        setSeed(22)
+        x = generate_dataset(
+            n_samples=90,
+            n_features=9,
+            n_causes=12,
+            n_layers=6,
+            n_hidden=36,
+            blockwise=True,
+            preset='balanced_realistic',
+        )
+        self.assertEqual(x.shape, (90, 9))
+        self.assertTrue(np.isfinite(x).all())
+
+    def test_generate_dataset_requires_explicit_scm_size(self) -> None:
+        setSeed(23)
+        with self.assertRaises(TypeError):
+            _ = generate_dataset(preset='balanced_realistic')
+
+    def test_generate_dataset_allows_preset_overrides(self) -> None:
+        setSeed(24)
+        x = generate_dataset(
+            n_samples=72,
+            n_features=6,
+            n_causes=9,
+            n_layers=4,
+            n_hidden=20,
+            blockwise=False,
+            preset='smooth_stable',
+            fixed=False,
+            p_posthoc=0.5,
+        )
+        self.assertEqual(x.shape, (72, 6))
         self.assertTrue(np.isfinite(x).all())
 
     def test_max_retries_raises(self) -> None:
