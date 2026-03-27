@@ -1,4 +1,10 @@
-"""Meta layers for preprocessing, scaling, and random activation choice."""
+"""Meta layers for preprocessing, scaling, and random activation choice.
+
+These helpers are used to inject lightweight stochasticity around activations:
+- ``Standardizer`` normalizes inputs using statistics from its first forward pass.
+- ``RandomScale`` applies a random affine scaling.
+- ``RandomChoice`` mixes outputs from randomly sampled activation modules.
+"""
 
 import torch
 from torch import nn
@@ -7,12 +13,19 @@ from torch.nn import functional as F
 
 # --- preprocessing layers
 class Standardizer(nn.Module):
+    """Standardize feature-wise using mean/std estimated on first call.
+
+    The running statistics are lazily initialized and then reused for all future
+    forwards, so this behaves like a one-shot fit + transform layer.
+    """
+
     def __init__(self):
         super().__init__()
         self.mean = None
         self.std = None
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Cache first-batch statistics and reuse them afterwards.
         if self.mean is None or self.std is None:
             self.mean = x.mean(dim=0, keepdim=True)
             self.std = x.std(dim=0, keepdim=True) + 1e-6
@@ -20,8 +33,11 @@ class Standardizer(nn.Module):
 
 
 class RandomScale(nn.Module):
+    """Apply a random affine transform with positive scale."""
+
     def __init__(self):
         super().__init__()
+        # Log-normal draw keeps scale strictly positive.
         self.scale = (2 * torch.randn(1)).exp()
         self.bias = torch.randn(1)
 
@@ -30,6 +46,8 @@ class RandomScale(nn.Module):
 
 
 class RandomScaleFactory:
+    """Factory producing `Standardizer -> RandomScale -> activation` blocks."""
+
     def __init__(self, act: nn.Module):
         self.act = act
 
@@ -39,7 +57,7 @@ class RandomScaleFactory:
 
 # --- random choice layers
 class RandomChoice(nn.Module):
-    """pass data through one of {n_choice} activations"""
+    """Route each feature through one of `n_choice` randomly sampled activations."""
 
     def __init__(self, acts: list[nn.Module], n_choice: int = 1):
         super().__init__()
@@ -53,6 +71,8 @@ class RandomChoice(nn.Module):
         return f'Random-{self.k}'
 
     def mask(self, x: torch.Tensor) -> torch.Tensor:
+        # Build a per-feature one-hot assignment across k sampled activations,
+        # then shuffle so adjacent features do not always use the same branch.
         n = x.shape[-1]
         u = torch.arange(0, n) % self.k
         mask = F.one_hot(u, num_classes=self.k).float()
@@ -60,6 +80,7 @@ class RandomChoice(nn.Module):
         return mask[perm]
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Sample k activation classes (with replacement) on every forward call.
         indices = torch.randint(0, self.n, (self.k,))
         acts = [self.acts[idx]() for idx in indices]
         out = torch.stack([act(x) for act in acts], dim=-1)
@@ -68,6 +89,8 @@ class RandomChoice(nn.Module):
 
 
 class RandomChoiceFactory:
+    """Factory creating `RandomChoice` modules with fixed candidate pool."""
+
     def __init__(self, acts: list[nn.Module], n_choice: int = 1):
         self.acts = acts
         self.n_choice = n_choice
