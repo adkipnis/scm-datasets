@@ -1,9 +1,8 @@
 """Collection of basic and handcrafted activation functions."""
 
+import numpy as np
 import torch
 from torch import nn
-
-from .utils import getRng
 
 
 # --- simple activations
@@ -50,7 +49,7 @@ class Cos(nn.Module):
 class Mod(nn.Module):
     def __init__(self, lower: float = 0.0, upper: float = 10.0):
         super().__init__()
-        self.k = getRng().uniform(lower, upper)
+        self.k = np.random.rand(lower, upper)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x % self.k
