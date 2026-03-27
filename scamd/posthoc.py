@@ -6,11 +6,11 @@ from torch.nn import functional as F
 from torch import distributions as D
 import numpy as np
 from .meta import Standardizer
-from .utils import getRng
+from .utils import sanityCheck
 
 
 # --- deterministic post-hoc layers
-
+RNG = np.random.default_rng(0)
 
 class Base(nn.Module):
     """Base layer that mixes input features into post-hoc outputs."""
@@ -57,7 +57,7 @@ class MultiThreshold(Base):
     ):
         super().__init__(n_in, n_out, standardize)
         self.levels = levels  # number of thresholds
-        self.tau = np.sort(getRng().normal(size=levels - 1))
+        self.tau = np.sort(RNG.normal(size=levels - 1))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Count how many sampled thresholds each value exceeds."""
@@ -76,7 +76,7 @@ class QuantileBins(Base):
     ):
         super().__init__(n_in, n_out, standardize)
         self.levels = levels  # number of quantiles
-        quantiles = np.sort(getRng().random(size=levels - 1))
+        quantiles = np.sort(RNG.random(size=levels - 1))
         self.quantiles = torch.tensor(quantiles).float()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -170,8 +170,54 @@ class NegativeBinomial(Stochastic):
         return x
 
 
-def getPosthocLayers() -> list[nn.Module]:
-    """Return all available post-hoc layer classes."""
-    deterministic = [Threshold, MultiThreshold, QuantileBins]
-    stochastic = [Categorical, Poisson, NegativeBinomial]
-    return deterministic + stochastic
+POSTHOC_LAYERS = (Threshold, MultiThreshold, QuantileBins, Categorical, Poisson, NegativeBinomial)
+
+class Posthoc(nn.Module):
+    """Apply optional post-hoc feature transformations to SCM outputs."""
+
+    def __init__(
+        self,
+        n_features: int,
+        p_posthoc: float = 0.2,  # probability of posthoc transformation
+        rng: np.random.Generator | None = None
+    ):
+        """Initialize a random set of post-hoc transformation layers."""
+        super().__init__()
+        self.n_features = n_features
+        if rng is None:
+            rng = np.random.default_rng(0)
+        self.rng = rng
+
+        # draw number of posthoc features
+        self.n_posthoc = self.rng.binomial(n_features, p_posthoc)
+
+        # posthoc transformations
+        layers = []
+        for _ in range(self.n_posthoc):
+            cfg = {
+                'n_in': n_features,
+                'n_out': self.rng.integers(1, 3),
+                'standardize': True,
+            }
+            layer = self.rng.choice(POSTHOC_LAYERS) # type: ignore
+            layers.append(layer(**cfg))
+        self.transformations = nn.ModuleList(layers)
+
+    @torch.inference_mode()
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if self.n_posthoc > 0:
+            out = []
+
+            # try out each transform
+            for t in self.transformations:
+                h = t(x)
+                if sanityCheck(h):
+                    out.append(h)
+
+            # append them to the original and take a subset of both
+            if out:
+                z = torch.cat(out, dim=-1)
+                x = torch.cat([x, z], dim=-1)
+                idx = torch.randperm(x.shape[-1])[: self.n_features]
+                x = x[..., idx]
+        return x
