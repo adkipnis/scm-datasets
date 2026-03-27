@@ -50,6 +50,13 @@ def hasConstantColumns(x: torch.Tensor) -> torch.Tensor:
     col_is_constant = (x == first_row).all(dim=0)
     return col_is_constant
 
+def sanityCheck(x: torch.Tensor) -> bool:
+    if hasConstantColumns(x).any():
+        return False
+    if not torch.isfinite(x).any():
+        return False
+    return True
+
 
 # --- standardize
 def moments(
