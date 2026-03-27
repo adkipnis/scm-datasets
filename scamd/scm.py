@@ -8,7 +8,6 @@ from torch import nn
 from scamd.utils import hasConstantColumns, sanityCheck
 
 
-
 class NoiseLayer(nn.Module):
     """Add elementwise Gaussian noise with a configurable scale."""
 
@@ -29,28 +28,23 @@ class SCM(nn.Module):
     def __init__(
         self,
         n_features: int,
-
         # cause_dist: str = 'uniform',  # [mixed, normal, uniform]
         # fixed_moments: bool = False,  # fixed moments of causes
-
         # MLP architecture
         n_causes: int = 10,  # units in initial layer
         n_layers: int = 8,
-        n_hidden: int = 32, # units per layer
+        n_hidden: int = 32,  # units per layer
         activation: Callable = nn.ReLU,
         sigma_w: float = 1.0,  # for weight initialization
-
         # feature extraction
         contiguous: bool = False,  # sample adjacent features
         blockwise: bool = True,  # use blockwise dropout
         p_dropout: float = 0.1,  # dropout probability for weights
-
-       # Gaussian noise
+        # Gaussian noise
         sigma_e: float = 0.01,  # for additive noise
         vary_sigma_e: bool = True,  # allow noise to vary per units
-
         # misc
-        rng: np.random.Generator | None = None
+        rng: np.random.Generator | None = None,
     ):
         """Initialize SCM sampling modules and random MLP layers."""
         super().__init__()
@@ -96,7 +90,7 @@ class SCM(nn.Module):
         """Initialize all linear weight matrices in the network."""
         # init linear weights either with regular droput or blockwise dropout
         for i, block in enumerate(self.layers):
-            param = block[0].weight # type: ignore
+            param = block[0].weight   # type: ignore
             if self.blockwise:
                 self._initLayerBlockDropout(param)
             else:
@@ -124,8 +118,7 @@ class SCM(nn.Module):
         sigma_w = float(self.sigma_w / (keep_prob**0.5))
         for block in range(n_blocks):
             block_slice = tuple(
-                slice(dim * block, dim * (block + 1))
-                for dim in block_size
+                slice(dim * block, dim * (block + 1)) for dim in block_size
             )
             nn.init.normal_(param[block_slice], std=sigma_w)
 

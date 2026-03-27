@@ -10,6 +10,7 @@ import torch
 from scamd.pool import getActivations
 from scamd.presets import POOL_PRESETS, PRESET_LABELS
 
+
 def _sample_pool_curves(
     pool: list, x: torch.Tensor, n_curves: int
 ) -> list[torch.Tensor]:

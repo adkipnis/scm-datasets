@@ -32,7 +32,6 @@ class CauseSampler(nn.Module):
             self.mu = torch.randn(n_causes)
             self.sigma = (torch.randn(n_causes) * self.mu).abs()
 
-
     def normal(self, shape: tuple[int, int]) -> torch.Tensor:
         x = torch.randn(*shape)
         if not self.fixed:
@@ -92,9 +91,9 @@ class CauseSampler(nn.Module):
         shape = (n_samples, self.n_causes)
         return self.dist(shape)
 
+
 if __name__ == '__main__':
     n = 100
     d = 3
     cs = CauseSampler(n_causes=8, dist='mixed')
     x = cs.sample(n)
-

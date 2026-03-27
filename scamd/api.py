@@ -11,6 +11,7 @@ from .pool import getActivations
 from .presets import get_dataset_preset, get_pool_preset
 from .posthoc import Posthoc
 from .scm import SCM
+from .utils import getRng
 
 
 class Generator:
@@ -45,7 +46,7 @@ class Generator:
 
         # rng
         if rng is None:
-            rng = np.random.default_rng(0)
+            rng = getRng()
         self.rng = rng
         causes_cfg['rng'] = self.rng
         scm_cfg['rng'] = self.rng
@@ -76,7 +77,7 @@ class Generator:
         **config: Any,
     ) -> 'Generator':
         """Build cause/SCM/posthoc configs from a named preset."""
-        shared_rng = np.random.default_rng(0) if rng is None else rng
+        shared_rng = getRng() if rng is None else rng
         preset_cfg = get_dataset_preset(preset)
         pool_name = str(preset_cfg['pool_preset'])
         pool_cfg = get_pool_preset(pool_name)
@@ -153,6 +154,16 @@ class Generator:
         self, n_samples: int, return_numpy: bool = True
     ) -> np.ndarray | torch.Tensor:
         return self.sample(n_samples=n_samples, return_numpy=return_numpy)
+
+    @torch.inference_mode()
+    def sample_causes(
+        self, n_samples: int, return_numpy: bool = True
+    ) -> np.ndarray | torch.Tensor:
+        """Sample only root causes from the bundled cause sampler."""
+        x = self.cause_sampler.sample(n_samples)
+        if return_numpy:
+            return x.detach().cpu().numpy()
+        return x
 
 
 def generate_dataset(

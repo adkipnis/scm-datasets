@@ -12,6 +12,7 @@ def setSeed(s: int) -> None:
     torch.manual_seed(s)
     torch.cuda.manual_seed_all(s)
 
+
 def logUniform(
     rng: np.random.Generator,
     low: float,
@@ -34,11 +35,13 @@ def logUniform(
 
 # --- sanity checkers
 
+
 def hasConstantColumns(x: torch.Tensor) -> torch.Tensor:
     #  numeric (n, d) -> bool (d,)
     first_row = x[0]
     col_is_constant = (x == first_row).all(dim=0)
     return col_is_constant
+
 
 def sanityCheck(x: torch.Tensor) -> bool:
     if hasConstantColumns(x).any():

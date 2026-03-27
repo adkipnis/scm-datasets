@@ -15,14 +15,14 @@ from scamd.utils import getRng, hasConstantColumns, logUniform, setSeed
 class TestSCMSmoke(unittest.TestCase):
     def test_module_imports(self) -> None:
         modules = [
-            "scamd.basic",
-            "scamd.meta",
-            "scamd.causes",
-            "scamd.posthoc",
-            "scamd.gp",
-            "scamd.pool",
-            "scamd.scm",
-            "scamd.api",
+            'scamd.basic',
+            'scamd.meta',
+            'scamd.causes',
+            'scamd.posthoc',
+            'scamd.gp',
+            'scamd.pool',
+            'scamd.scm',
+            'scamd.api',
         ]
         for module_name in modules:
             with self.subTest(module=module_name):
@@ -33,7 +33,7 @@ class TestSCMSmoke(unittest.TestCase):
         setSeed(11)
         causes = CauseSampler(
             n_causes=8,
-            dist="normal",
+            dist='normal',
             fixed_moments=True,
         ).sample(128)
         scm = SCM(
@@ -56,7 +56,7 @@ class TestSCMSmoke(unittest.TestCase):
         setSeed(12)
         causes = CauseSampler(
             n_causes=7,
-            dist="uniform",
+            dist='uniform',
             fixed_moments=True,
         ).sample(96)
         scm = SCM(
@@ -79,19 +79,23 @@ class TestSCMSmoke(unittest.TestCase):
 
     def test_reproducible_with_seed(self) -> None:
         cfg = {
-            "n_features": 4,
-            "n_causes": 6,
-            "n_layers": 3,
-            "n_hidden": 10,
-            "activation": nn.Tanh,
-            "blockwise": False,
-            "vary_sigma_e": False,
+            'n_features': 4,
+            'n_causes': 6,
+            'n_layers': 3,
+            'n_hidden': 10,
+            'activation': nn.Tanh,
+            'blockwise': False,
+            'vary_sigma_e': False,
         }
         setSeed(123)
-        c1 = CauseSampler(n_causes=6, dist="normal", fixed_moments=True).sample(64)
+        c1 = CauseSampler(
+            n_causes=6, dist='normal', fixed_moments=True
+        ).sample(64)
         x1 = SCM(**cfg)(c1)
         setSeed(123)
-        c2 = CauseSampler(n_causes=6, dist="normal", fixed_moments=True).sample(64)
+        c2 = CauseSampler(
+            n_causes=6, dist='normal', fixed_moments=True
+        ).sample(64)
         x2 = SCM(**cfg)(c2)
         self.assertIsNotNone(x1)
         self.assertIsNotNone(x2)
@@ -117,7 +121,7 @@ class TestSCMSmoke(unittest.TestCase):
             n_layers=5,
             n_hidden=24,
             blockwise=True,
-            cause_dist="mixed",
+            cause_dist='mixed',
             activation=nn.SiLU,
         )
         self.assertEqual(x.shape, (80, 7))
@@ -132,7 +136,7 @@ class TestSCMSmoke(unittest.TestCase):
             n_layers=6,
             n_hidden=36,
             blockwise=True,
-            preset="balanced_realistic",
+            preset='balanced_realistic',
         )
         self.assertEqual(x.shape, (90, 9))
         self.assertTrue(np.isfinite(x).all())
@@ -140,7 +144,7 @@ class TestSCMSmoke(unittest.TestCase):
     def test_generate_dataset_requires_explicit_scm_size(self) -> None:
         setSeed(23)
         with self.assertRaises(TypeError):
-            _ = generate_dataset(preset="balanced_realistic")
+            _ = generate_dataset(preset='balanced_realistic')
 
     def test_generate_dataset_allows_preset_overrides(self) -> None:
         setSeed(24)
@@ -151,7 +155,7 @@ class TestSCMSmoke(unittest.TestCase):
             n_layers=4,
             n_hidden=20,
             blockwise=False,
-            preset="smooth_stable",
+            preset='smooth_stable',
             fixed=False,
             p_posthoc=0.5,
         )
@@ -162,20 +166,20 @@ class TestSCMSmoke(unittest.TestCase):
         setSeed(25)
         gen = Generator(
             causes_config={
-                "n_causes": 9,
-                "dist": "mixed",
-                "fixed_moments": False,
+                'n_causes': 9,
+                'dist': 'mixed',
+                'fixed_moments': False,
             },
             scm_config={
-                "n_features": 6,
-                "n_causes": 9,
-                "n_layers": 4,
-                "n_hidden": 20,
-                "blockwise": False,
+                'n_features': 6,
+                'n_causes': 9,
+                'n_layers': 4,
+                'n_hidden': 20,
+                'blockwise': False,
             },
             posthoc_config={
-                "n_features": 6,
-                "p_posthoc": 0.5,
+                'n_features': 6,
+                'p_posthoc': 0.5,
             },
         )
         x = gen.sample(72)
@@ -196,7 +200,7 @@ class TestSCMSmoke(unittest.TestCase):
             n_layers=4,
             n_hidden=20,
             blockwise=False,
-            preset="smooth_stable",
+            preset='smooth_stable',
             fixed=False,
             p_posthoc=0.5,
         )
@@ -208,15 +212,15 @@ class TestSCMSmoke(unittest.TestCase):
         setSeed(33)
         gen = Generator(
             causes_config={
-                "n_causes": 6,
+                'n_causes': 6,
             },
             scm_config={
-                "n_features": 4,
-                "n_causes": 6,
+                'n_features': 4,
+                'n_causes': 6,
             },
             posthoc_config={
-                "n_features": 4,
-                "p_posthoc": 0.0,
+                'n_features': 4,
+                'p_posthoc': 0.0,
             },
             max_retries=0,
         )
@@ -224,5 +228,5 @@ class TestSCMSmoke(unittest.TestCase):
             _ = gen.sample(64)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

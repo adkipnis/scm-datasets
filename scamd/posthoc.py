@@ -12,6 +12,7 @@ from .utils import sanityCheck
 # --- deterministic post-hoc layers
 RNG = np.random.default_rng(0)
 
+
 class Base(nn.Module):
     """Base layer that mixes input features into post-hoc outputs."""
 
@@ -170,7 +171,15 @@ class NegativeBinomial(Stochastic):
         return x
 
 
-POSTHOC_LAYERS = (Threshold, MultiThreshold, QuantileBins, Categorical, Poisson, NegativeBinomial)
+POSTHOC_LAYERS = (
+    Threshold,
+    MultiThreshold,
+    QuantileBins,
+    Categorical,
+    Poisson,
+    NegativeBinomial,
+)
+
 
 class Posthoc(nn.Module):
     """Apply optional post-hoc feature transformations to SCM outputs."""
@@ -179,7 +188,7 @@ class Posthoc(nn.Module):
         self,
         n_features: int,
         p_posthoc: float = 0.2,  # probability of posthoc transformation
-        rng: np.random.Generator | None = None
+        rng: np.random.Generator | None = None,
     ):
         """Initialize a random set of post-hoc transformation layers."""
         super().__init__()
@@ -199,7 +208,7 @@ class Posthoc(nn.Module):
                 'n_out': self.rng.integers(1, 3),
                 'standardize': True,
             }
-            layer = self.rng.choice(POSTHOC_LAYERS) # type: ignore
+            layer = self.rng.choice(POSTHOC_LAYERS)   # type: ignore
             layers.append(layer(**cfg))
         self.transformations = nn.ModuleList(layers)
 
