@@ -11,7 +11,6 @@ from .pool import getActivations
 from .presets import get_dataset_preset, get_pool_preset
 from .posthoc import Posthoc
 from .scm import SCM
-from .utils import getRng
 
 
 class Generator:
@@ -46,7 +45,7 @@ class Generator:
 
         # rng
         if rng is None:
-            rng = getRng()
+            rng = np.random.default_rng(0)
         self.rng = rng
         causes_cfg['rng'] = self.rng
         scm_cfg['rng'] = self.rng
@@ -67,6 +66,7 @@ class Generator:
         n_layers: int,
         n_hidden: int,
         blockwise: bool,
+        contiguous: bool = False,
         preset: str = 'balanced_realistic',
         activation: Callable | None = None,
         p_posthoc: float | None = None,
@@ -77,7 +77,7 @@ class Generator:
         **config: Any,
     ) -> 'Generator':
         """Build cause/SCM/posthoc configs from a named preset."""
-        shared_rng = getRng() if rng is None else rng
+        shared_rng = np.random.default_rng(0) if rng is None else rng
         preset_cfg = get_dataset_preset(preset)
         pool_name = str(preset_cfg['pool_preset'])
         pool_cfg = get_pool_preset(pool_name)
@@ -98,6 +98,7 @@ class Generator:
             'n_layers': n_layers,
             'n_hidden': n_hidden,
             'blockwise': blockwise,
+            'contiguous': contiguous,
             'activation': (
                 activation
                 if activation is not None
@@ -174,6 +175,7 @@ def generate_dataset(
     n_layers: int,
     n_hidden: int,
     blockwise: bool,
+    contiguous: bool = False,
     preset: str = 'balanced_realistic',
     activation: Callable | None = None,
     p_posthoc: float | None = None,
@@ -188,6 +190,7 @@ def generate_dataset(
         n_layers=n_layers,
         n_hidden=n_hidden,
         blockwise=blockwise,
+        contiguous=contiguous,
         preset=preset,
         activation=activation,
         p_posthoc=p_posthoc,
