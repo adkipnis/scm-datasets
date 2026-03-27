@@ -1,61 +1,61 @@
-"""Run deterministic and stochastic post-hoc transformations.
+"""Visualize each post-hoc transform and its correlation with input x."""
 
-This script applies each post-hoc layer to random data and prints correlation summaries.
-"""
+import math
 
-import sys
-from pathlib import Path
-
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from scipy.stats import spearmanr
 
-ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-from scamd.posthoc import (
-    Categorical,
-    Geometric,
-    MultiThreshold,
-    NegativeBinomial,
-    Poisson,
-    QuantileBins,
-    Rank,
-    Threshold,
-)
+from scamd.posthoc import getPosthocLayers
 from scamd.utils import setSeed
 
 
-def test(model, x, statistic: str = 'pearson') -> None:
-    y = torch.cat([model(x), model(x)], dim=-1)
-    corr_sum = 0
-    for i in range(len(y)):
-        if statistic == 'pearson':
-            corr = np.corrcoef(y[i], rowvar=False)
-        elif statistic == 'spearman':
-            corr = spearmanr(y[i], axis=0)[0]
-        else:
-            raise ValueError('unknown statistic')
-        corr_sum += corr
-    corr_mean = corr_sum / len(y)
-    unique = corr_mean[np.triu_indices_from(corr_mean, k=1)]
-    print(unique)
+def pearson_corr(x: np.ndarray, y: np.ndarray) -> float:
+    """Compute Pearson correlation on flattened arrays."""
+    x = x.ravel()
+    y = y.ravel()
+    if x.std() == 0 or y.std() == 0:
+        return float('nan')
+    return float(np.corrcoef(x, y)[0, 1])
+
+
+def plot_posthoc_grid() -> None:
+    """Plot every available post-hoc transform against the same input grid."""
+    classes = getPosthocLayers()
+    n_plots = len(classes)
+    ncol = 3
+    nrow = math.ceil(n_plots / ncol)
+
+    x = torch.linspace(-4, 4, 400).view(1, -1, 1)
+    x_np = x[0, :, 0].numpy()
+
+    fig, axes = plt.subplots(nrow, ncol, figsize=(12, 8))
+    axes = list(getattr(axes, 'flat', [axes]))
+
+    for i, layer_cls in enumerate(classes):
+        layer = layer_cls(n_in=1, n_out=1)
+        y = layer(x).float()
+        y_np = y[0, :, 0].detach().numpy()
+        corr = pearson_corr(x_np, y_np)
+
+        axes[i].scatter(x_np, y_np, s=8, alpha=0.5)
+        axes[i].set_title(layer_cls.__name__, size=11)
+        axes[i].text(
+            0.04,
+            0.95,
+            f'corr={corr:.3f}',
+            transform=axes[i].transAxes,
+            va='top',
+            bbox={'boxstyle': 'round', 'facecolor': 'white', 'alpha': 0.8},
+        )
+
+    for ax in axes[n_plots:]:
+        ax.set_visible(False)
+
+    plt.suptitle('Post-hoc transforms vs input x', size=18)
+    fig.tight_layout()
 
 
 if __name__ == '__main__':
-    setSeed(1)
-
-    batch, n, d = 64, 100, 8
-    x = torch.randn((batch, n, d)) * 3
-
-    _ = Threshold(d, 2)(x)
-    _ = MultiThreshold(d, 1, levels=3)(x)
-    _ = QuantileBins(d, 2, levels=2)(x)
-    _ = Rank(d, 5)(x)
-
-    test(Categorical(d, 1), x)
-    test(Categorical(d, 2), x)
-    test(Poisson(d, 1), x)
-    test(Geometric(d, 1), x)
-    test(NegativeBinomial(d, 1), x)
+    setSeed(0)
+    plot_posthoc_grid()
