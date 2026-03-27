@@ -1,5 +1,5 @@
 [project]
-name = "scm-datasets"
+name = "scamd"
 version = "0.1.0"
 description = "Structural causal models for simulating realistic datasets"
 readme = "README.md"

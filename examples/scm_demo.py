@@ -12,9 +12,9 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.activations import getActivations
-from src.scm import Posthoc, SCM
-from src.utils import getRng, logUniform, setSeed
+from scamd.activations import getActivations
+from scamd.scm import Posthoc, SCM
+from scamd.utils import getRng, logUniform, setSeed
 
 
 if __name__ == '__main__':

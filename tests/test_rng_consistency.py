@@ -1,6 +1,6 @@
 import unittest
 
-from src.utils import setSeed
+from scamd.utils import setSeed
 
 
 def _contains_forbidden_rng_calls(text: str) -> bool:
@@ -12,16 +12,16 @@ def _contains_forbidden_rng_calls(text: str) -> bool:
 
 
 class TestRngConsistency(unittest.TestCase):
-    def test_no_np_random_or_python_random_in_src(self) -> None:
+    def test_no_np_random_or_python_random_in_package(self) -> None:
         setSeed(0)
         paths = [
-            'src/basic.py',
-            'src/causes.py',
-            'src/gp.py',
-            'src/posthoc.py',
-            'src/scm.py',
-            'src/activations.py',
-            'src/meta.py',
+            'scamd/basic.py',
+            'scamd/causes.py',
+            'scamd/gp.py',
+            'scamd/posthoc.py',
+            'scamd/scm.py',
+            'scamd/activations.py',
+            'scamd/meta.py',
         ]
         offenders: list[str] = []
         for path in paths:

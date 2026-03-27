@@ -6,13 +6,13 @@ Generate realistic synthetic tabular datasets with a structural causal model (SC
 
 ## Design at a glance
 
-1. **Cause sampling** (`src/causes.py`)
+1. **Cause sampling** (`scamd/causes.py`)
    Sample root variables from configurable distributions.
 
-2. **Structural mechanism** (`src/scm.py`)
+2. **Structural mechanism** (`scamd/scm.py`)
    Pass causes through a deep noisy MLP with stochastic activations/weights.
 
-3. **Post-hoc feature transforms** (`src/posthoc.py`)
+3. **Post-hoc feature transforms** (`scamd/posthoc.py`)
    Inject realistic tabular effects (thresholding, quantiles, categorical/count outputs).
 
 ## Install
@@ -28,8 +28,8 @@ Python `>=3.12` is required.
 ```python
 from torch import nn
 
-from src import generate_dataset
-from src.utils import setSeed
+from scamd import generate_dataset
+from scamd.utils import setSeed
 
 setSeed(42)
 

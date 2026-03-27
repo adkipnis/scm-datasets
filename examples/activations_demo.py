@@ -14,10 +14,10 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.activations import getActivations
-from src.basic import basic_activations
-from src.gp import GP
-from src.utils import setSeed
+from scamd.activations import getActivations
+from scamd.basic import basic_activations
+from scamd.gp import GP
+from scamd.utils import setSeed
 
 
 def gridplot(

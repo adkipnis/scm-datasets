@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.posthoc import (
+from scamd.posthoc import (
     Categorical,
     Geometric,
     MultiThreshold,
@@ -24,7 +24,7 @@ from src.posthoc import (
     Rank,
     Threshold,
 )
-from src.utils import setSeed
+from scamd.utils import setSeed
 
 
 def test(model, x, statistic: str = 'pearson') -> None:

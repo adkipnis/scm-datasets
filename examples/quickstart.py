@@ -1,7 +1,7 @@
 from torch import nn
 
-from src import generate_dataset
-from src.utils import setSeed
+from scamd import generate_dataset
+from scamd.utils import setSeed
 
 setSeed(42)
 

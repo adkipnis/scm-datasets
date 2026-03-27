@@ -5,22 +5,22 @@ import numpy as np
 import torch
 from torch import nn
 
-from src import generate_dataset
-from src.scm import Posthoc, SCM
-from src.utils import checkConstant, getRng, logUniform, setSeed
+from scamd import generate_dataset
+from scamd.scm import Posthoc, SCM
+from scamd.utils import checkConstant, getRng, logUniform, setSeed
 
 
 class TestSCMSmoke(unittest.TestCase):
     def test_module_imports(self) -> None:
         modules = [
-            'src.basic',
-            'src.meta',
-            'src.causes',
-            'src.posthoc',
-            'src.gp',
-            'src.activations',
-            'src.scm',
-            'src.api',
+            'scamd.basic',
+            'scamd.meta',
+            'scamd.causes',
+            'scamd.posthoc',
+            'scamd.gp',
+            'scamd.activations',
+            'scamd.scm',
+            'scamd.api',
         ]
         for module_name in modules:
             with self.subTest(module=module_name):
