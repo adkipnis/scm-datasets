@@ -28,37 +28,36 @@ def gridplot(
 
 if __name__ == '__main__':
     setSeed(42)
-
+    n_samples = 1000
     config = {
-        'n_samples': 1000,
         'n_causes': 8,
         'dist': 'normal',
-        'fixed': True,
+        'fixed_moments': True,
     }
 
     # --- Normal distribution with fixed parameters
-    x = CauseSampler(**config).sample()
+    x = CauseSampler(**config).sample(n_samples)
     gridplot(
         x, nrow=3, ncol=3, figsize=(10, 8), title='Causes: Normal (Fixed)'
     )
 
     # --- Normal distribution with random parameters
-    config.update({'fixed': False})
-    x = CauseSampler(**config).sample()
+    config.update({'fixed_moments': False})
+    x = CauseSampler(**config).sample(n_samples)
     gridplot(
         x, nrow=3, ncol=3, figsize=(10, 8), title='Causes: Normal (Random)'
     )
 
     # --- Uniform distribution with random parameters
     config.update({'dist': 'uniform'})
-    x = CauseSampler(**config).sample()
+    x = CauseSampler(**config).sample(n_samples)
     gridplot(
         x, nrow=3, ncol=3, figsize=(10, 8), title='Causes: Uniform (Random)'
     )
 
     # --- Mixed distributions (normal, uniform, multinomial, zipf) with random parameters
-    config.update({'dist': 'mixed', 'fixed': False})
-    x = CauseSampler(**config).sample()
+    config.update({'dist': 'mixed', 'fixed_moments': False})
+    x = CauseSampler(**config).sample(n_samples)
     gridplot(
         x, nrow=3, ncol=3, figsize=(10, 8), title='Causes: Mixed (Random)'
     )

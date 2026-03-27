@@ -3,69 +3,72 @@
 import numpy as np
 import torch
 from torch import nn
-from typing import Iterable
-
-from .utils import getRng
 
 
 class CauseSampler(nn.Module):
     def __init__(
         self,
-        n_samples: int,
         n_causes: int,
-        dist: str = 'normal',  # [mixed, normal, uniform]
-        fixed: bool = False,  # random parameters for dist
-        **kwargs,
+        dist: str = 'mixed',  # [mixed, normal, uniform]
+        fixed_moments: bool = False,  # random parameters for dist
+        rng: np.random.Generator | None = None,
     ) -> None:
         super().__init__()
-        self.n_samples = n_samples
         self.n_causes = n_causes
+
+        # set rng
+        if rng is None:
+            rng = np.random.default_rng(0)
+        self.rng = rng
+
+        # set distribution
         self.dist = {
             'normal': self.normal,
             'uniform': self.uniform,
             'mixed': self.mixed,
         }[dist]
-        self.fixed = fixed
+        self.fixed = fixed_moments
         if not self.fixed:
             self.mu = torch.randn(n_causes)
             self.sigma = (torch.randn(n_causes) * self.mu).abs()
 
-    def normal(self, shape: Iterable) -> torch.Tensor:
+
+    def normal(self, shape: tuple[int, int]) -> torch.Tensor:
         x = torch.randn(*shape)
         if not self.fixed:
             mu, sigma = self.mu.unsqueeze(0), self.sigma.unsqueeze(0)
             x = mu + x * sigma
         return x
 
-    def uniform(self, shape: Iterable) -> torch.Tensor:
+    def uniform(self, shape: tuple[int, int]) -> torch.Tensor:
         x = torch.rand(*shape)
         if not self.fixed:
             mu, sigma = self.mu.unsqueeze(0), self.sigma.unsqueeze(0)
             x = mu + (x - 0.5) * sigma * np.sqrt(12)
         return x
 
-    def _multinomial(self, shape: Iterable) -> torch.Tensor:
+    def _multinomial(self, shape: tuple[int, int]) -> torch.Tensor:
         n, d = shape
-        n_categories = getRng().integers(2, 20)
+        n_categories = int(torch.randint(low=2, high=20, size=(1,))[0])
         probs = torch.rand((d, n_categories))
         x = torch.multinomial(probs, n, replacement=True).permute(1, 0).float()
         x = (x - x.mean(0)) / x.std(0)
         return x
 
-    def _zipf(self, shape: Iterable) -> torch.Tensor:
-        a = 2 * getRng().random() + 2
-        x = getRng().zipf(a, shape)  # type: ignore
-        x = torch.tensor(x).clamp(max=10).float()
+    def _zipf(self, shape: tuple[int, int]) -> torch.Tensor:
+        a = 2 * self.rng.random() + 2
+        x = self.rng.zipf(a, shape)
+        x = torch.from_numpy(x).clamp(max=10).float()
         x = (x - x.mean(0)) / x.std(0)
         return x
 
-    def mixed(self, shape: Iterable) -> torch.Tensor:
+    def mixed(self, shape: tuple[int, int]) -> torch.Tensor:
         out = []
         dists = [torch.randn, torch.rand, self._multinomial, self._zipf]
         n, d = shape
 
         # draw distributions
-        probs = getRng().dirichlet(alpha=np.ones((4,)), size=(d,))
+        probs = self.rng.dirichlet(alpha=np.ones((4,)), size=(d,))
         ids = np.sort(probs.argmax(-1))
         ids, counts = np.unique_counts(ids)
 
@@ -85,6 +88,13 @@ class CauseSampler(nn.Module):
             x = mu + x * sigma
         return x
 
-    def sample(self) -> torch.Tensor:
-        shape = (self.n_samples, self.n_causes)
+    def sample(self, n_samples: int) -> torch.Tensor:
+        shape = (n_samples, self.n_causes)
         return self.dist(shape)
+
+if __name__ == '__main__':
+    n = 100
+    d = 3
+    cs = CauseSampler(n_causes=8, dist='mixed')
+    x = cs.sample(n)
+
