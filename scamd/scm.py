@@ -6,7 +6,7 @@ import torch
 from torch import nn
 
 from scamd.causes import CauseSampler
-from scamd.utils import hasConstantColumns
+from scamd.utils import hasConstantColumns, sanityCheck
 
 
 
@@ -186,7 +186,7 @@ class SCM(nn.Module):
             x = outputs[:, idx]
 
             # sanity check
-            if torch.isfinite(x).all() and not hasConstantColumns(x).any():
+            if sanityCheck(x):
                 return x
 
         raise RuntimeError(
