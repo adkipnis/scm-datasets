@@ -87,16 +87,6 @@ class QuantileBins(Base):
         return x
 
 
-class Rank(Base):
-    """Return indices of the top-k features per sample."""
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Compute top-k feature indices with k capped at input width."""
-        k = min(self.n_out, x.shape[-1])
-        x = torch.topk(x, k).indices
-        return x
-
-
 # --- stochastic post-hoc layers
 class Stochastic(Base):
     """Base post-hoc layer that injects Gaussian noise before decoding."""
@@ -147,16 +137,6 @@ class Poisson(Stochastic):
         return x
 
 
-class Geometric(Stochastic):
-    """Sample geometric random variables parameterized by logits."""
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Draw geometric samples from the transformed logits."""
-        x = self.preprocess(x)[..., 0]
-        x = D.Geometric(logits=x).sample()
-        return x
-
-
 class NegativeBinomial(Stochastic):
     """Sample overdispersed counts via a Negative Binomial model."""
 
@@ -176,6 +156,6 @@ class NegativeBinomial(Stochastic):
 
 def getPosthocLayers() -> list[nn.Module]:
     """Return all available post-hoc layer classes."""
-    deterministic = [Threshold, MultiThreshold, QuantileBins, Rank]
-    stochastic = [Categorical, Poisson, Geometric, NegativeBinomial]
+    deterministic = [Threshold, MultiThreshold, QuantileBins]
+    stochastic = [Categorical, Poisson, NegativeBinomial]
     return deterministic + stochastic
