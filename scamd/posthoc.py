@@ -109,7 +109,20 @@ class Stochastic(Base):
 
 
 class Categorical(Stochastic):
-    """Produce one-hot categorical outputs from noisy logits."""
+    """Sample one-hot categorical outputs from noisy logits."""
+
+    def __init__(
+        self,
+        n_in: int,
+        n_out: int,
+        standardize: bool = False,
+        sigma: float = 0.01,
+        temperature: float = 1.0,
+    ):
+        super().__init__(
+            n_in=n_in, n_out=n_out, standardize=standardize, sigma=sigma
+        )
+        self.temperature = max(float(temperature), 1e-3)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Sample one-hot classes with an implicit reference category."""
